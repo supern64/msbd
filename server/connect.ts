@@ -1,8 +1,8 @@
 import { type Socket } from "bun";
-import { connect, ping, simpleStreamInfo, streamInfo } from "../protocol/response";
-import { Message, REQ_CONNECTION_FLAGS, RES_CONNECTION_FLAGS } from "../protocol/constants";
-import { currentStream, type SocketData } from "..";
-import { startStreamFromFFMPEG, startStreamFromFile } from "./stream";
+import { connect, ping } from "../protocol/response";
+import { REQ_CONNECTION_FLAGS, RES_CONNECTION_FLAGS } from "../protocol/constants";
+import { type SocketData } from "..";
+import { startStreamFromFFMPEG } from "./stream";
 
 export interface ConnectMessage {
     dwFlags: REQ_CONNECTION_FLAGS,
@@ -21,18 +21,21 @@ export async function handleConnect(socket: Socket<SocketData>, content: Connect
     socket.write(connect(0, RES_CONNECTION_FLAGS.ASF_NOT_IN_NSC, 0, 0, 0))
     console.log(`[msbd:connect] attempting to start stream`)
     
-    //startStreamFromFile(socket, "stream_lq.asf")
     startStreamFromFFMPEG(socket, Bun.argv[2])
 
+    /*
     // schedule ping every 30 seconds
     socket.data.pingInterval = setInterval(() => {
+        console.log("[msbd] pinging client")
         socket.write(ping())
         if (!socket.data.pingDue) {
             socket.data.pingDue = true
             socket.data.timeOut = setTimeout(() => {
                 // client hasn't responded in 2 minutes
+                console.log(`[msbd] client ${socket.remoteAddress} presumed timed out - disconnecting`)
                 socket.end()
             }, 120000)
         }
     }, 30000)
+    */
 }

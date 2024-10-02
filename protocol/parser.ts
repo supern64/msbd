@@ -34,7 +34,8 @@ export function parsePacket(socket: Socket<SocketData>, data: Uint8Array) {
         case Message.REQ_STREAMINFO:
             handleStreamInfo(socket)
             break
-        case Message.REQ_PING:
+        case Message.RES_PING:
+            console.log("respond to ping received")
             handlePing(socket)
             break
         default:

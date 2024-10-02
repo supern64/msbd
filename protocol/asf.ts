@@ -164,8 +164,8 @@ export async function* readASF(stream: Readable): AsyncGenerator<ASFData, void, 
             }
             yield fileInfo
         } else {
-            await headerT.ignore(Number(size) - 24) // ちょっと危ないですけど
-            console.log(`[asf] skipping over header ${guid}`)
+            await headerT.ignore(Number(size) - 24) // i hope this is safe
+            // console.log(`[asf] skipping over header ${guid}`)
         }
     }
     if (!fileInfo) {
@@ -230,27 +230,3 @@ export async function* readASF(stream: Readable): AsyncGenerator<ASFData, void, 
         packetReadCount++
     }
 }
-/* 
-{
-  type: "8CABDCA1-A947-11CF-8EE4-00C00C205365",
-  flags: {
-    broadcast: true,
-    seekable: true,
-  },
-  creationDate: 116444736000000000n,
-  fileId: "00000000-0000-0000-0000-000000000000",
-  fileSize: 0n,
-  packetCount: 0n,
-  playDuration: 31000000n,
-  sendDuration: 0n,
-  preroll: 3100n,
-  minPacketSize: 3200,
-  maxPacketSize: 3200,
-  maxBitRate: 328000,
-}
-{
-  type: "75B22636-668E-11CF-A6D9-00AA0062CE6C",
-  dataSize: 50n,
-  totalDataPackets: 0n,
-}
-*/

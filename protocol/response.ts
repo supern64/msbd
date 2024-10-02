@@ -37,7 +37,7 @@ export function concat(...byte: Uint8Array[]): Uint8Array {
 }
 
 export function ping() {
-    return header(Message.RES_PING, 16, 0)
+    return header(Message.REQ_PING, 16, 0)
 }
 
 export function header(

@@ -8,20 +8,21 @@ import * as childProcess from "child_process";
 
 export async function streamASF(socket: Socket<SocketData>, stream: ReadableStream | Readable) {
     if (stream instanceof ReadableStream) stream = bunToNodeStream(stream)
+    let dataObjectReceived = false, filePropertiesReceived = false, headerSent = false
     for await (const message of readASF(stream)) {
         /* @ts-ignore -- bun's types are shit -- */
         if (socket.readyState !== 1) return
         switch (message.type) {
             case DataType.DATA_OBJECT:
                 currentStream.header = message.withHeader
+                dataObjectReceived = true
                 break
             case DataType.FILE_PROPERTIES:
                 currentStream.maxPacketSize = message.maxPacketSize
                 currentStream.totalPackets = Number(message.packetCount)
                 currentStream.duration = Number(message.playDuration)
                 currentStream.bitRate = message.maxBitRate
-                console.log(currentStream)
-                socket.write(simpleStreamInfo(Message.IND_STREAMINFO, 0, currentStream))
+                filePropertiesReceived = true
                 break
             case DataType.DATA_PACKET:
                 const p = packet(
@@ -30,6 +31,12 @@ export async function streamASF(socket: Socket<SocketData>, stream: ReadableStre
                     message.data
                 )
                 socket.write(p)     
+        }
+        if (!headerSent && dataObjectReceived && filePropertiesReceived) {
+            // data complete, time to send headerz
+            headerSent = true
+            console.log(currentStream)
+            socket.write(simpleStreamInfo(Message.IND_STREAMINFO, 0, currentStream))
         }
     }
     socket.write(endOfStream())
@@ -54,4 +61,5 @@ export async function startStreamFromFFMPEG(socket: Socket<SocketData>, src: str
     )
     
     await streamASF(socket, ffmpeg.stdout)
+    ffmpeg.kill()
 }

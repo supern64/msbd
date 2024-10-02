@@ -5,7 +5,7 @@ import { currentStream, type SocketData } from "..";
 
 
 export function handleStreamInfo(socket: Socket<SocketData>) {
-    console.log(`[msbd:connect] ${socket.remoteAddress} requested stream info`)
+    console.log(`[msbd:streamInfo] ${socket.remoteAddress} requested stream info`)
 
     socket.write(simpleStreamInfo(Message.RES_STREAMINFO, 0, currentStream))
 }
