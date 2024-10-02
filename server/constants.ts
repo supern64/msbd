@@ -25,8 +25,16 @@ export const FFMPEG_FLAGS: {[key: string]: Flag} = {
         flags: ["-re"],
         position: FlagPosition.BEFORE_INPUT
     },
-    "720p30": {
-        flags: ["-r", "30", "-vf", "scale=1280:720"],
+    "hq": {
+        flags: ["-r", "30", "-vf", "scale=-1:720"],
+        position: FlagPosition.AFTER_INPUT
+    },
+    "mq": {
+        flags: ["-r", "30", "-vf", "scale=-1:480"],
+        position: FlagPosition.AFTER_INPUT
+    },
+    "lq": {
+        flags: ["-r", "15", "-vf", "scale=-1:288"],
         position: FlagPosition.AFTER_INPUT
     }
 }

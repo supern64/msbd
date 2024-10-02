@@ -44,11 +44,22 @@ export interface SocketData {
 
 if (!parsedArgs.port || !parsedArgs.config || !parsedArgs.media) {
     console.error("[server] missing config/media")
+    help()
     process.exit(1)
 }
 if (!parsedArgs.config.every((r) => FFMPEG_FLAGS[r])) {
     console.error(`[server] invalid config, valid options are ${Object.keys(FFMPEG_FLAGS).join(", ")}`)
     process.exit(1)
+}
+
+function help() {
+    console.log(
+`
+msbd - MSBD Protocol/Windows Media Encoder Emulator
+Available flags:
+    -p, --port              Port to use [default: 7007]
+    -c, --config            FFMPEG flag presets to use (${Object.keys(FFMPEG_FLAGS).join(", ")})
+    -m, --media             The media to play (file/URL that ffmpeg can open)`)
 }
 
 Bun.listen<SocketData>({
