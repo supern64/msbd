@@ -1,10 +1,11 @@
 import type { Socket } from "bun";
 import type { Readable } from "stream";
-import { currentStream, type SocketData } from "..";
+import { currentStream, parsedArgs, type SocketData } from "..";
 import { bunToNodeStream, DataType, readASF } from "../protocol/asf";
 import { emptyStreamInfo, endOfStream, packet, simpleStreamInfo } from "../protocol/response";
 import { Message } from "../protocol/constants";
 import * as childProcess from "child_process";
+import { FFMPEG_FLAGS, FlagPosition } from "./constants";
 
 export async function streamASF(socket: Socket<SocketData>, stream: ReadableStream | Readable) {
     if (stream instanceof ReadableStream) stream = bunToNodeStream(stream)
@@ -35,7 +36,7 @@ export async function streamASF(socket: Socket<SocketData>, stream: ReadableStre
         if (!headerSent && dataObjectReceived && filePropertiesReceived) {
             // data complete, time to send headerz
             headerSent = true
-            console.log(currentStream)
+            console.log("[msbd:stream] sending stream headers")
             socket.write(simpleStreamInfo(Message.IND_STREAMINFO, 0, currentStream))
         }
     }
@@ -48,18 +49,22 @@ export async function startStreamFromFile(socket: Socket<SocketData>, fileName: 
 }
 
 export async function startStreamFromFFMPEG(socket: Socket<SocketData>, src: string) {
+    const flags = (parsedArgs.config as string[]).map((r) => FFMPEG_FLAGS[r])
+    const ffmpegFlags = [
+        flags.filter((f) => {return f.position === FlagPosition.BEFORE_INPUT}).map((r) => r.flags).flat(),
+        "-i", src,
+        flags.filter((f) => {return f.position === FlagPosition.AFTER_INPUT}).map((r) => r.flags).flat(),
+        "-f", "asf",
+        "-"
+    ].flat()
+    console.log(`[msbd:stream] launching ffmpeg ${ffmpegFlags.join(" ")}`)
     const ffmpeg = childProcess.spawn(
         "ffmpeg",
-        [
-            "-re",
-            "-i",
-            src,
-            "-f",
-            "asf",
-            "-"
-        ]
+        ffmpegFlags
     )
-    
+    ffmpeg.stderr.on("data", (d) => {
+        Bun.write(Bun.stdout, d.toString())
+    })
     await streamASF(socket, ffmpeg.stdout)
     ffmpeg.kill()
 }

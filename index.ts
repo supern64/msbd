@@ -1,6 +1,28 @@
 import { parsePacket } from "./protocol/parser";
 import type { StreamInfo } from "./protocol/response";
+import { parseArgs } from "util";
+import { FFMPEG_FLAGS } from "./server/constants";
 
+export const { values: parsedArgs } = parseArgs({
+    options: {
+        port: {
+            type: "string",
+            default: "7007",
+            short: "p"
+        },
+        config: {
+            type: "string",
+            multiple: true,
+            short: "c"
+        },
+        media: {
+            type: "string",
+            short: "m"
+        }
+    }
+})
+
+// init stream info
 export let currentStream: StreamInfo = {
     streamId: 3,
     maxPacketSize: 0xFFFD,
@@ -13,8 +35,6 @@ export let currentStream: StreamInfo = {
     link: "msbd://192.168.1.2"
 }
 
-export const clientList: number[] = []
-
 export interface SocketData {
     pingInterval?: Timer,
     timeOut?: Timer,
@@ -22,9 +42,18 @@ export interface SocketData {
     packetCount: number
 }
 
+if (!parsedArgs.port || !parsedArgs.config || !parsedArgs.media) {
+    console.error("[server] missing config/media")
+    process.exit(1)
+}
+if (!parsedArgs.config.every((r) => FFMPEG_FLAGS[r])) {
+    console.error(`[server] invalid config, valid options are ${Object.keys(FFMPEG_FLAGS).join(", ")}`)
+    process.exit(1)
+}
+
 Bun.listen<SocketData>({
     hostname: "0.0.0.0",
-    port: 7007,
+    port: parseInt(parsedArgs.port),
     socket: {
         data(socket, data) {
             parsePacket(socket, new Uint8Array(data))
@@ -49,4 +78,4 @@ Bun.listen<SocketData>({
     }
 })
 
-console.log("server listening on port 7007")
+console.log(`[server] listening on port ${parsedArgs.port}`)

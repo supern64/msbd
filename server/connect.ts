@@ -1,7 +1,7 @@
 import { type Socket } from "bun";
 import { connect, ping } from "../protocol/response";
 import { REQ_CONNECTION_FLAGS, RES_CONNECTION_FLAGS } from "../protocol/constants";
-import { type SocketData } from "..";
+import { parsedArgs, type SocketData } from "..";
 import { startStreamFromFFMPEG } from "./stream";
 
 export interface ConnectMessage {
@@ -21,7 +21,7 @@ export async function handleConnect(socket: Socket<SocketData>, content: Connect
     socket.write(connect(0, RES_CONNECTION_FLAGS.ASF_NOT_IN_NSC, 0, 0, 0))
     console.log(`[msbd:connect] attempting to start stream`)
     
-    startStreamFromFFMPEG(socket, Bun.argv[2])
+    startStreamFromFFMPEG(socket, parsedArgs.media!)
 
     /*
     // schedule ping every 30 seconds
