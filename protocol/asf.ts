@@ -4,6 +4,11 @@ import { Readable, Transform } from "stream";
 import { EndOfStreamError, StreamReader } from "peek-readable";
 import { concat } from "./response";
 
+/*
+    this is a terribly written ASF reader,
+    absolutely do NOT heed by my example
+*/
+
 // GUID token
 const GUID: strtok3.IToken<string> = {
     len: 16,

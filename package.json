@@ -2,6 +2,9 @@
   "name": "msbd",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "run": "bun index.ts"
+  },
   "devDependencies": {
     "@tokenizer/token": "^0.3.0",
     "@types/bun": "latest"
@@ -10,6 +13,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@bitarray/typedarray": "^1.1.1",
     "peek-readable": "^5.2.0",
     "strtok3": "^9.0.0",
     "token-types": "^6.0.0"

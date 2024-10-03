@@ -1,3 +1,7 @@
+/*
+    constants required for the MSBD protocol
+*/
+
 export const DW_SIGNATURE = 0x2042534D
 export const W_VERSION = 0x0106
 

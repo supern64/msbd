@@ -1,3 +1,7 @@
+/*
+    main file
+*/
+
 import { parsePacket } from "./protocol/parser";
 import type { StreamInfo } from "./protocol/response";
 import { parseArgs } from "util";
@@ -58,8 +62,13 @@ function help() {
 msbd - MSBD Protocol/Windows Media Encoder Emulator
 Available flags:
     -p, --port              Port to use [default: 7007]
-    -c, --config            FFMPEG flag presets to use (${Object.keys(FFMPEG_FLAGS).join(", ")})
-    -m, --media             The media to play (file/URL that ffmpeg can open)`)
+    -c, --config            FFMPEG flag presets to use (see below)
+    -m, --media             The media to play (file/URL that ffmpeg can open)
+
+Valid presets (check server/constants.ts):
+` + 
+Object.entries(FFMPEG_FLAGS).map((r) => `    ${r[0].padEnd(24, " ")}${r[1].description}`).join("\n")
+)
 }
 
 Bun.listen<SocketData>({

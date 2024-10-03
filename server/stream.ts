@@ -1,3 +1,7 @@
+/*
+    handles streaming data
+*/
+
 import type { Socket } from "bun";
 import type { Readable } from "stream";
 import { currentStream, parsedArgs, type SocketData } from "..";

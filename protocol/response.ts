@@ -1,4 +1,7 @@
-// server sided packets
+/*
+    generates outbound MSBD packets
+*/
+
 import { RES_CONNECTION_FLAGS, DW_SIGNATURE, Message, SIN_FAMILY, W_VERSION } from "./constants";
 
 export interface StreamInfo {

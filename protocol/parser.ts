@@ -1,3 +1,7 @@
+/*
+    decodes incoming MSBD packets
+*/
+
 import type { Socket } from "bun";
 import { DW_SIGNATURE, Message, REQ_CONNECTION_FLAGS } from "./constants";
 import { handleConnect } from "../server/connect";
@@ -35,7 +39,6 @@ export function parsePacket(socket: Socket<SocketData>, data: Uint8Array) {
             handleStreamInfo(socket)
             break
         case Message.RES_PING:
-            console.log("respond to ping received")
             handlePing(socket)
             break
         default:

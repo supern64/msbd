@@ -1,3 +1,7 @@
+/*
+    handles connection packet
+*/
+
 import { type Socket } from "bun";
 import { connect, ping } from "../protocol/response";
 import { REQ_CONNECTION_FLAGS, RES_CONNECTION_FLAGS } from "../protocol/constants";

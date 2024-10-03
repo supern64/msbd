@@ -1,3 +1,7 @@
+/*
+    handles stream info request - client usually doesn't do this
+*/
+
 import { type Socket } from "bun";
 import { simpleStreamInfo } from "../protocol/response";
 import { Message } from "../protocol/constants";

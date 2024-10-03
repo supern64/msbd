@@ -1,7 +1,7 @@
 import { bunToNodeStream, DataType, readASF } from "./protocol/asf"
 
-// 
+// testing file, nothing to see here~
 
-for await (const data of readASF(bunToNodeStream(Bun.file("stream_lq.asf").stream()))) {
-    if (data.type === DataType.DATA_PACKET && data.data[0] != 130) console.log("weird data packet")
+for await (const data of readASF(bunToNodeStream(Bun.file("test_media/stream_lq.asf").stream()))) {
+    if (data.type !== DataType.DATA_PACKET) console.log(data)
 }
