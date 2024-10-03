@@ -6,10 +6,10 @@ import type { Socket } from "bun";
 import type { Readable } from "stream";
 import { currentStream, parsedArgs, type SocketData } from "..";
 import { bunToNodeStream, DataType, readASF } from "../protocol/asf";
-import { emptyStreamInfo, endOfStream, packet, simpleStreamInfo } from "../protocol/response";
+import { endOfStream, packet, simpleStreamInfo } from "../protocol/response";
 import { Message } from "../protocol/constants";
 import * as childProcess from "child_process";
-import { FFMPEG_FLAGS, FlagPosition } from "./constants";
+import { FFMPEG_FLAGS, FlagPosition, type Flag } from "./constants";
 
 export async function streamASF(socket: Socket<SocketData>, stream: ReadableStream | Readable) {
     if (stream instanceof ReadableStream) stream = bunToNodeStream(stream)
@@ -45,15 +45,16 @@ export async function streamASF(socket: Socket<SocketData>, stream: ReadableStre
         }
     }
     socket.write(endOfStream())
-    socket.write(emptyStreamInfo(Message.IND_STREAMINFO, 0xC00D0033)) // no double stream support yet, sorry!
 }
 
 export async function startStreamFromFile(socket: Socket<SocketData>, fileName: string) {
+    // don't use this, it streams the file too quickly
     await streamASF(socket, Bun.file(fileName).stream())
 }
 
-export async function startStreamFromFFMPEG(socket: Socket<SocketData>, src: string) {
-    const flags = (parsedArgs.config as string[]).map((r) => FFMPEG_FLAGS[r])
+export async function startStreamFromFFMPEG(socket: Socket<SocketData>, src: string, flags: Flag[] = []) {
+    // combined with global flags (global flags come first)
+    flags = [...new Set((parsedArgs.config as string[]).map((r) => FFMPEG_FLAGS[r]).concat(flags))]
     const ffmpegFlags = [
         flags.filter((f) => {return f.position === FlagPosition.BEFORE_INPUT}).map((r) => r.flags).flat(),
         "-i", src,

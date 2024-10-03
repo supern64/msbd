@@ -2,7 +2,7 @@ import * as strtok3 from "strtok3";
 import * as Token from "token-types";
 import { Readable, Transform } from "stream";
 import { EndOfStreamError, StreamReader } from "peek-readable";
-import { concat } from "./response";
+import { concat } from "../util/encoding";
 
 /*
     this is a terribly written ASF reader,

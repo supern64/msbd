@@ -1,5 +1,5 @@
 import BitArray, { type bit } from "@bitarray/typedarray";
-import { concat } from "../protocol/response";
+import { concat } from "../util/encoding";
 
 // netshow binary string decoding
 // used to encode binary stuff in .nsc files

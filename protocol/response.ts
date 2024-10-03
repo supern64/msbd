@@ -3,6 +3,7 @@
 */
 
 import { RES_CONNECTION_FLAGS, DW_SIGNATURE, Message, SIN_FAMILY, W_VERSION } from "./constants";
+import { concat } from "../util/encoding";
 
 export interface StreamInfo {
     streamId: number,
@@ -27,16 +28,6 @@ export interface StreamInfoWire {
     cbLink: number,
     cbHeader: number,
     bBinaryData: Uint8Array
-}
-
-export function concat(...byte: Uint8Array[]): Uint8Array {
-    const mergedArray = new Uint8Array(byte.map((r) => r.length).reduce((p, c) => { return p + c }))
-    let ptr = 0;
-    for (const array of byte) {
-        mergedArray.set(array, ptr)
-        ptr += array.length
-    }
-    return mergedArray
 }
 
 export function ping() {

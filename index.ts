@@ -22,6 +22,10 @@ export const { values: parsedArgs } = parseArgs({
         media: {
             type: "string",
             short: "m"
+        },
+        playlist: {
+            type: "string",
+            short: "l"
         }
     }
 })
@@ -46,12 +50,12 @@ export interface SocketData {
     packetCount: number
 }
 
-if (!parsedArgs.port || !parsedArgs.config || !parsedArgs.media) {
-    console.error("[server] missing config/media")
+if (!parsedArgs.port || (!parsedArgs.media && !parsedArgs.playlist)) {
+    console.error("[server] missing config/media/playlist")
     help()
     process.exit(1)
 }
-if (!parsedArgs.config.every((r) => FFMPEG_FLAGS[r])) {
+if (parsedArgs.config && !parsedArgs.config.every((r) => FFMPEG_FLAGS[r])) {
     console.error(`[server] invalid config, valid options are ${Object.keys(FFMPEG_FLAGS).join(", ")}`)
     process.exit(1)
 }
@@ -64,6 +68,7 @@ Available flags:
     -p, --port              Port to use [default: 7007]
     -c, --config            FFMPEG flag presets to use (see below)
     -m, --media             The media to play (file/URL that ffmpeg can open)
+    -l, --playlist         A .txt file of media to play, line-by-line, with flags
 
 Valid presets (check server/constants.ts):
 ` + 
