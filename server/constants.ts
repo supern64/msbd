@@ -24,6 +24,11 @@ export const FFMPEG_FLAGS: {[key: string]: Flag} = {
         flags: ["-stats"],
         position: FlagPosition.BEFORE_INPUT
     },
+    "copy": {
+        description: "Copy codec (for streaming .asf files)",
+        flags: ["-c", "copy"],
+        position: FlagPosition.AFTER_INPUT
+    },
     "music": {
         description: "For music streams (ignores video stream)",
         flags: ["-vn", "-c:a", "wmav2"],
@@ -40,28 +45,38 @@ export const FFMPEG_FLAGS: {[key: string]: Flag} = {
         position: FlagPosition.BEFORE_INPUT
     },
     "hq": {
-        description: "Scales video down to 720p30 in original aspect ratio",
-        flags: ["-r", "30", "-vf", "scale=-1:720"],
+        description: "Scales video down to 720p in original aspect ratio",
+        flags: ["-vf", "scale=-1:720"],
         position: FlagPosition.AFTER_INPUT
     },
     "mq": {
-        description: "Scales video down to 480p30 in original aspect ratio",
-        flags: ["-r", "30", "-vf", "scale=-1:480"],
+        description: "Scales video down to 480p in original aspect ratio",
+        flags: ["-vf", "scale=-1:480"],
         position: FlagPosition.AFTER_INPUT
     },
     "lq": {
-        description: "Scales video down to 288p30 in original aspect ratio",
-        flags: ["-r", "15", "-vf", "scale=-1:288"],
+        description: "Scales video down to 288p in original aspect ratio",
+        flags: ["-vf", "scale=-1:288"],
         position: FlagPosition.AFTER_INPUT
     },
     "mq43": {
         description: "Scales 16:9 video down to 640x480 with letterboxing",
-        flags: ["-r", "30", "-vf", "scale=640:-1,pad=640:480:-1:-1"],
+        flags: ["-vf", "scale=640:-1,pad=640:480:-1:-1"],
         position: FlagPosition.AFTER_INPUT
     },
     "lq43": {
         description: "Scales 16:9 video down to 384x288 with letterboxing",
-        flags: ["-r", "15", "-vf", "scale=384:-1,pad=384:288:-1:-1"],
+        flags: ["-vf", "scale=384:-1,pad=384:288:-1:-1"],
+        position: FlagPosition.AFTER_INPUT
+    },
+    "30": {
+        description: "Renders video to 30fps",
+        flags: ["-r", "30"],
+        position: FlagPosition.AFTER_INPUT
+    },
+    "15": {
+        description: "Renders video to 15fps",
+        flags: ["-r", "15"],
         position: FlagPosition.AFTER_INPUT
     }
 }

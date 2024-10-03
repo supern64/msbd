@@ -32,7 +32,7 @@ export const { values: parsedArgs } = parseArgs({
 
 // init stream info
 export let currentStream: StreamInfo = {
-    streamId: 3,
+    streamId: 0,
     maxPacketSize: 0xFFFD,
     totalPackets: 0,
     bitRate: 0xFFFD,
@@ -68,7 +68,7 @@ Available flags:
     -p, --port              Port to use [default: 7007]
     -c, --config            FFMPEG flag presets to use (see below)
     -m, --media             The media to play (file/URL that ffmpeg can open)
-    -l, --playlist         A .txt file of media to play, line-by-line, with flags
+    -l, --playlist          A .txt file of media to play, line-by-line, with flags
 
 Valid presets (check server/constants.ts):
 ` + 

@@ -5,7 +5,7 @@
 import type { Socket } from "bun"
 import { getPlaylistFromFile, type PlaylistEntry } from "../util/playlist"
 import { startStreamFromFFMPEG } from "./stream"
-import type { SocketData } from ".."
+import { currentStream, type SocketData } from ".."
 import { emptyStreamInfo } from "../protocol/response"
 import { Message } from "../protocol/constants"
 
@@ -29,8 +29,17 @@ export async function startQueue(socket: Socket<SocketData>) {
     if (nextItem) {
         console.log(`[msbd:queue] playing ${nextItem.source}`)
         await startStreamFromFFMPEG(socket, nextItem.source, nextItem.flags)
+        currentStream.streamId++
+        // from MSBD 2.2.6
+        if (currentStream.streamId > 0x07FF) {
+            currentStream.streamId = 0x8000
+        } else if (currentStream.streamId > 0x87FF) {
+            currentStream.streamId = 0
+        }
         await startQueue(socket)
+    } else {
+        currentStream.streamId = 0
+        socket.write(emptyStreamInfo(Message.IND_STREAMINFO, 0xC00D0033))
+        console.log("[msbd:queue] queue has ended")
     }
-    socket.write(emptyStreamInfo(Message.IND_STREAMINFO, 0xC00D0033))
-    console.log("[msbd:queue] queue has ended")
 }

@@ -201,7 +201,6 @@ export async function* readASF(stream: Readable): AsyncGenerator<ASFData, void, 
     }
 
     let packetReadCount = 0;
-    let opaqueCount = 0;
 
     
     while ((totalDataPackets > 0 ? packetReadCount < totalDataPackets : true)) { // we don't know how long this goes on because this could very well be a stream
@@ -231,7 +230,6 @@ export async function* readASF(stream: Readable): AsyncGenerator<ASFData, void, 
             opaqueData, ecc,
             data: packet
         }
-        if (opaqueData) opaqueCount += 1
         packetReadCount++
     }
 }
