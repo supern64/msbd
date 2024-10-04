@@ -4,7 +4,8 @@
 
 export enum FlagPosition {
     BEFORE_INPUT,
-    AFTER_INPUT
+    AFTER_INPUT,
+    NONE
 }
 
 export interface Flag {
@@ -13,9 +14,9 @@ export interface Flag {
     position: FlagPosition
 }
 
-export const FFMPEG_FLAGS: {[key: string]: Flag} = {
+export const FLAGS: {[key: string]: Flag} = {
     "silent": {
-        description: "Hides ffmpeg's banner",
+        description: "Hides ffmpeg's banner & only logs errors (highly recommended)",
         flags: ["-hide_banner", "-loglevel", "error"],
         position: FlagPosition.BEFORE_INPUT
     },
@@ -24,8 +25,13 @@ export const FFMPEG_FLAGS: {[key: string]: Flag} = {
         flags: ["-stats"],
         position: FlagPosition.BEFORE_INPUT
     },
+    "direct": {
+        description: "Stream .asf file directly, overrides all other flags",
+        flags: [],
+        position: FlagPosition.NONE
+    },
     "copy": {
-        description: "Copy codec (for streaming .asf files)",
+        description: "Copy codec (you may want to try direct first)",
         flags: ["-c", "copy"],
         position: FlagPosition.AFTER_INPUT
     },
@@ -40,7 +46,7 @@ export const FFMPEG_FLAGS: {[key: string]: Flag} = {
         position: FlagPosition.AFTER_INPUT
     },
     "re": {
-        description: "Read original file in the same framerate",
+        description: "Read file in the same framerate (highly recommended)",
         flags: ["-re"],
         position: FlagPosition.BEFORE_INPUT
     },
@@ -70,12 +76,12 @@ export const FFMPEG_FLAGS: {[key: string]: Flag} = {
         position: FlagPosition.AFTER_INPUT
     },
     "30": {
-        description: "Renders video to 30fps",
+        description: "Downsamples video to 30fps",
         flags: ["-r", "30"],
         position: FlagPosition.AFTER_INPUT
     },
     "15": {
-        description: "Renders video to 15fps",
+        description: "Downsamples video to 15fps",
         flags: ["-r", "15"],
         position: FlagPosition.AFTER_INPUT
     }

@@ -2,14 +2,14 @@
     handles streaming data
 */
 
-import type { Socket } from "bun";
+import { type Socket } from "bun";
 import type { Readable } from "stream";
 import { currentStream, parsedArgs, type SocketData } from "..";
 import { bunToNodeStream, DataType, readASF } from "../protocol/asf";
 import { endOfStream, packet, simpleStreamInfo } from "../protocol/response";
 import { Message } from "../protocol/constants";
 import * as childProcess from "child_process";
-import { FFMPEG_FLAGS, FlagPosition, type Flag } from "./constants";
+import { FlagPosition, type Flag } from "./constants";
 
 export async function streamASF(socket: Socket<SocketData>, stream: ReadableStream | Readable, useSendTime: boolean = false) {
     if (stream instanceof ReadableStream) stream = bunToNodeStream(stream)
@@ -49,8 +49,7 @@ export async function streamASF(socket: Socket<SocketData>, stream: ReadableStre
             if (!headerSent && dataObjectReceived && filePropertiesReceived) {
                 // data complete, time to send headerz
                 headerSent = true
-                console.log("[msbd:stream] sending stream headers")
-                console.log(`[msbd:stream] MP: ${currentStream.maxPacketSize}, TP: ${currentStream.totalPackets}, D: ${currentStream.duration}, MBR: ${currentStream.bitRate}`)
+                console.log(`[msbd:stream] sending stream headers (MP: ${currentStream.maxPacketSize}, TP: ${currentStream.totalPackets}, D: ${currentStream.duration}, MBR: ${currentStream.bitRate})`)
                 socket.write(simpleStreamInfo(Message.IND_STREAMINFO, 0, currentStream))
             }
         }
@@ -63,12 +62,18 @@ export async function streamASF(socket: Socket<SocketData>, stream: ReadableStre
 }
 
 export async function startStreamFromFile(socket: Socket<SocketData>, fileName: string) {
-    await streamASF(socket, Bun.file(fileName).stream(), true)
+    try {
+        const stream = Bun.file(fileName).stream()
+        console.log(`[msbd:stream] streaming directly from ${fileName}`)
+        await streamASF(socket, stream, true)
+    } catch (e) {
+        console.error(`[msbd:stream] error while reading file`)
+        console.error(e)
+    }
 }
 
 export async function startStreamFromFFMPEG(socket: Socket<SocketData>, src: string, flags: Flag[] = []) {
     // combined with global flags (global flags come first)
-    flags = [...new Set((parsedArgs.config as string[]).map((r) => FFMPEG_FLAGS[r]).concat(flags))]
     const ffmpegFlags = [
         flags.filter((f) => {return f.position === FlagPosition.BEFORE_INPUT}).map((r) => r.flags).flat(),
         "-i", src,

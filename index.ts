@@ -5,7 +5,7 @@
 import { parsePacket } from "./protocol/parser";
 import type { StreamInfo } from "./protocol/response";
 import { parseArgs } from "util";
-import { FFMPEG_FLAGS } from "./server/constants";
+import { FLAGS } from "./server/constants";
 
 export const { values: parsedArgs } = parseArgs({
     options: {
@@ -27,10 +27,9 @@ export const { values: parsedArgs } = parseArgs({
             type: "string",
             short: "l"
         },
-        direct: {
+        help: {
             type: "boolean",
-            short: "d",
-            default: false
+            short: "h"
         }
     }
 })
@@ -55,13 +54,18 @@ export interface SocketData {
     packetCount: number
 }
 
+if (parsedArgs.help) {
+    help()
+    process.exit(0)
+}
+
 if (!parsedArgs.port || (!parsedArgs.media && !parsedArgs.playlist)) {
     console.error("[server] missing config/media/playlist")
     help()
     process.exit(1)
 }
-if (parsedArgs.config && !parsedArgs.config.every((r) => FFMPEG_FLAGS[r])) {
-    console.error(`[server] invalid config, valid options are ${Object.keys(FFMPEG_FLAGS).join(", ")}`)
+if (parsedArgs.config && !parsedArgs.config.every((r) => FLAGS[r])) {
+    console.error(`[server] invalid config, valid options are ${Object.keys(FLAGS).join(", ")}`)
     process.exit(1)
 }
 
@@ -70,14 +74,15 @@ function help() {
 `
 msbd - MSBD Protocol/Windows Media Encoder Emulator
 Available flags:
+    -h, --help              Shows this page
     -p, --port              Port to use [default: 7007]
-    -c, --config            FFMPEG flag presets to use (see below)
-    -m, --media             The media to play (file/URL that ffmpeg can open)
+    -c, --config            Flags to use (see below)
+    -m, --media             The media to play (file/URL)
     -l, --playlist          A .txt file of media to play, line-by-line, with flags
 
-Valid presets (check server/constants.ts):
+Valid flags (check server/constants.ts):
 ` + 
-Object.entries(FFMPEG_FLAGS).map((r) => `    ${r[0].padEnd(24, " ")}${r[1].description}`).join("\n")
+Object.entries(FLAGS).map((r) => `    ${r[0].padEnd(24, " ")}${r[1].description}`).join("\n")
 )
 }
 

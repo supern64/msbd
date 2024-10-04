@@ -8,6 +8,7 @@ import { startStreamFromFFMPEG, startStreamFromFile } from "./stream"
 import { currentStream, parsedArgs, type SocketData } from ".."
 import { emptyStreamInfo } from "../protocol/response"
 import { Message } from "../protocol/constants"
+import { FLAGS } from "./constants"
 
 export const currentQueue: PlaylistEntry[] = []
 
@@ -28,7 +29,11 @@ export async function startQueue(socket: Socket<SocketData>) {
     }
     if (nextItem) {
         console.log(`[msbd:queue] playing ${nextItem.source}`)
-        if (parsedArgs.direct) {
+        nextItem.flags = [...new Set((parsedArgs.config as string[]).map((r) => FLAGS[r]).concat(nextItem.flags))]
+        if (nextItem.flags.includes(FLAGS.direct)) {
+            if (!nextItem.source.endsWith(".asf")) {
+                console.warn(`[msbd:queue] queued a stream with non .asf file extension for direct playback. this is probably bad.`)
+            }
             await startStreamFromFile(socket, nextItem.source)
         } else {
             await startStreamFromFFMPEG(socket, nextItem.source, nextItem.flags)
