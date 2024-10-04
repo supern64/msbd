@@ -26,6 +26,11 @@ export const { values: parsedArgs } = parseArgs({
         playlist: {
             type: "string",
             short: "l"
+        },
+        direct: {
+            type: "boolean",
+            short: "d",
+            default: false
         }
     }
 })

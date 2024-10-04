@@ -44,12 +44,7 @@ export enum DataType {
     DATA_PACKET = "DATA-PACKET" // arbitrary type
 }
 
-export enum LengthType {
-    NONE = 0,
-    BYTE = 1,
-    WORD = 2,
-    DWORD = 3
-}
+export const HEADER_LENGTH_MAP = [0, 1, 2, 4]
 
 export interface HeaderData {
     type: DataType.HEADER,
@@ -83,6 +78,7 @@ export interface PacketData {
     type: DataType.DATA_PACKET,
     opaqueData: boolean,
     ecc: boolean,
+    sendTime: number,
     data: Uint8Array
 }
 
@@ -224,10 +220,20 @@ export async function* readASF(stream: Readable): AsyncGenerator<ASFData, void, 
             await packetT.ignore(2)
             flags = await packetT.readNumber(Token.UINT8)
         }
+        
+        await packetT.ignore(
+            1 +
+            HEADER_LENGTH_MAP[((flags >> 1) & 3)] +
+            HEADER_LENGTH_MAP[((flags >> 3) & 3)] + 
+            HEADER_LENGTH_MAP[((flags >> 1) & 3)]
+        )
 
+        const sendTime = await packetT.readNumber(Token.UINT32_LE)
+        
         yield {
             type: DataType.DATA_PACKET,
             opaqueData, ecc,
+            sendTime,
             data: packet
         }
         packetReadCount++

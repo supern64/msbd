@@ -24,7 +24,7 @@ const INVERSE_LOOKUP_TABLE = [
     0x3b, 0x3c, 0x3d, 0x3e, 0xff, 0x3f, 0xff, 0xff
 ]
 
-function encode(key: number, array: Uint8Array): string {
+export function encode(key: number, array: Uint8Array): string {
     const header = new Uint8Array(9)
     const view = new DataView(header.buffer)
 
@@ -36,7 +36,7 @@ function encode(key: number, array: Uint8Array): string {
     return "02" + rawEncode(toEncode)
 }
 
-function decode(string: string): Uint8Array {
+export function decode(string: string): Uint8Array {
     if (string.startsWith("02")) string = string.slice(2)
     const decoded = rawDecode(string)
     const crc = decoded.slice(1).reduce((p, c) => {return p ^ c})
@@ -46,7 +46,7 @@ function decode(string: string): Uint8Array {
 
 // does not add or strip headers
 // DO NOT FORGET: strings stored in nsc files usually have 02 in front of them
-function rawEncode(array: Uint8Array): string {
+export function rawEncode(array: Uint8Array): string {
     const bitArray = new BitArray(array.length * 8)
     for (let i = 0; i < array.length; i++) {
         for (let j = 0; j < 8; j++) {
@@ -67,7 +67,7 @@ function rawEncode(array: Uint8Array): string {
     return string
 }
 
-function rawDecode(string: string): Uint8Array {
+export function rawDecode(string: string): Uint8Array {
     // calculate length in bytes
     const length = Math.floor((string.length * 6) / 8)
     const bitArray = new BitArray(string.length * 6)

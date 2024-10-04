@@ -11,9 +11,9 @@ import { Message } from "../protocol/constants";
 import * as childProcess from "child_process";
 import { FFMPEG_FLAGS, FlagPosition, type Flag } from "./constants";
 
-export async function streamASF(socket: Socket<SocketData>, stream: ReadableStream | Readable) {
+export async function streamASF(socket: Socket<SocketData>, stream: ReadableStream | Readable, useSendTime: boolean = false) {
     if (stream instanceof ReadableStream) stream = bunToNodeStream(stream)
-    let dataObjectReceived = false, filePropertiesReceived = false, headerSent = false
+    let dataObjectReceived = false, filePropertiesReceived = false, headerSent = false, lastSendTime = 0
     for await (const message of readASF(stream)) {
         /* @ts-ignore -- bun's types are shit -- */
         if (socket.readyState !== 1) return
@@ -35,7 +35,15 @@ export async function streamASF(socket: Socket<SocketData>, stream: ReadableStre
                     currentStream.streamId,
                     message.data
                 )
-                socket.write(p)     
+                if (useSendTime) {
+                    if (message.sendTime > lastSendTime) {
+                        await Bun.sleep(message.sendTime - lastSendTime - 100) // send it early (a bit)
+                    }
+                    lastSendTime = message.sendTime
+                    socket.write(p)
+                } else {
+                    socket.write(p)
+                }           
         }
         if (!headerSent && dataObjectReceived && filePropertiesReceived) {
             // data complete, time to send headerz
@@ -48,8 +56,7 @@ export async function streamASF(socket: Socket<SocketData>, stream: ReadableStre
 }
 
 export async function startStreamFromFile(socket: Socket<SocketData>, fileName: string) {
-    // don't use this, it streams the file too quickly
-    await streamASF(socket, Bun.file(fileName).stream())
+    await streamASF(socket, Bun.file(fileName).stream(), true)
 }
 
 export async function startStreamFromFFMPEG(socket: Socket<SocketData>, src: string, flags: Flag[] = []) {
