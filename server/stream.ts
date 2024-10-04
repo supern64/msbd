@@ -14,45 +14,52 @@ import { FFMPEG_FLAGS, FlagPosition, type Flag } from "./constants";
 export async function streamASF(socket: Socket<SocketData>, stream: ReadableStream | Readable, useSendTime: boolean = false) {
     if (stream instanceof ReadableStream) stream = bunToNodeStream(stream)
     let dataObjectReceived = false, filePropertiesReceived = false, headerSent = false, lastSendTime = 0
-    for await (const message of readASF(stream)) {
-        /* @ts-ignore -- bun's types are shit -- */
-        if (socket.readyState !== 1) return
-        switch (message.type) {
-            case DataType.DATA_OBJECT:
-                currentStream.header = message.withHeader
-                dataObjectReceived = true
-                break
-            case DataType.FILE_PROPERTIES:
-                currentStream.maxPacketSize = message.maxPacketSize
-                currentStream.totalPackets = Number(message.packetCount)
-                currentStream.duration = Number(message.playDuration)
-                currentStream.bitRate = message.maxBitRate
-                filePropertiesReceived = true
-                break
-            case DataType.DATA_PACKET:
-                const p = packet(
-                    socket.data.packetCount++,
-                    currentStream.streamId,
-                    message.data
-                )
-                if (useSendTime) {
-                    if (message.sendTime > lastSendTime) {
-                        await Bun.sleep(message.sendTime - lastSendTime - 100) // send it early (a bit)
-                    }
-                    lastSendTime = message.sendTime
-                    socket.write(p)
-                } else {
-                    socket.write(p)
-                }           
+    try {
+        for await (const message of readASF(stream)) {
+            /* @ts-ignore -- bun's types are shit -- */
+            if (socket.readyState !== 1) return
+            switch (message.type) {
+                case DataType.DATA_OBJECT:
+                    currentStream.header = message.withHeader
+                    dataObjectReceived = true
+                    break
+                case DataType.FILE_PROPERTIES:
+                    currentStream.maxPacketSize = message.maxPacketSize
+                    currentStream.totalPackets = Number(message.packetCount)
+                    currentStream.duration = Number(message.playDuration / BigInt(1000))
+                    currentStream.bitRate = message.maxBitRate
+                    filePropertiesReceived = true
+                    break
+                case DataType.DATA_PACKET:
+                    const p = packet(
+                        socket.data.packetCount++,
+                        currentStream.streamId,
+                        message.data
+                    )
+                    if (useSendTime) {
+                        if (message.sendTime > lastSendTime) {
+                            await Bun.sleep(message.sendTime - lastSendTime - 5)
+                        }
+                        lastSendTime = message.sendTime
+                        socket.write(p)
+                    } else {
+                        socket.write(p)
+                    }           
+            }
+            if (!headerSent && dataObjectReceived && filePropertiesReceived) {
+                // data complete, time to send headerz
+                headerSent = true
+                console.log("[msbd:stream] sending stream headers")
+                console.log(`[msbd:stream] MP: ${currentStream.maxPacketSize}, TP: ${currentStream.totalPackets}, D: ${currentStream.duration}, MBR: ${currentStream.bitRate}`)
+                socket.write(simpleStreamInfo(Message.IND_STREAMINFO, 0, currentStream))
+            }
         }
-        if (!headerSent && dataObjectReceived && filePropertiesReceived) {
-            // data complete, time to send headerz
-            headerSent = true
-            console.log("[msbd:stream] sending stream headers")
-            socket.write(simpleStreamInfo(Message.IND_STREAMINFO, 0, currentStream))
-        }
+        socket.write(endOfStream())
+    } catch (e) {
+        console.error("[msbd:stream] error occured while streaming content")
+        console.error(e)
+        return
     }
-    socket.write(endOfStream())
 }
 
 export async function startStreamFromFile(socket: Socket<SocketData>, fileName: string) {
