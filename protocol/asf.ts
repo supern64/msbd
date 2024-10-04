@@ -225,7 +225,7 @@ export async function* readASF(stream: Readable): AsyncGenerator<ASFData, void, 
             1 +
             HEADER_LENGTH_MAP[((flags >> 1) & 3)] +
             HEADER_LENGTH_MAP[((flags >> 3) & 3)] + 
-            HEADER_LENGTH_MAP[((flags >> 1) & 3)]
+            HEADER_LENGTH_MAP[((flags >> 5) & 3)]
         )
 
         const sendTime = await packetT.readNumber(Token.UINT32_LE)
