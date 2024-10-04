@@ -53,10 +53,11 @@ export async function streamASF(socket: Socket<SocketData>, stream: ReadableStre
                 socket.write(simpleStreamInfo(Message.IND_STREAMINFO, 0, currentStream))
             }
         }
-        socket.write(endOfStream())
+        socket.write(endOfStream(0))
     } catch (e) {
         console.error("[msbd:stream] error occured while streaming content")
         console.error(e)
+        if (headerSent) socket.write(endOfStream(0xC00D0024))
         return
     }
 }

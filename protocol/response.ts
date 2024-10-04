@@ -130,8 +130,8 @@ export function connect(
     )
 }
 
-export function endOfStream() {
-    return header(Message.IND_EOS, 16, 0) // will i have to change this?
+export function endOfStream(hr: number) {
+    return header(Message.IND_EOS, 16, hr)
 }
 
 export function packet(
